@@ -70,7 +70,7 @@ export default function Signup() {
           <span className="text-blue-500">Sign in</span>
         </Link>
       </div>
-      <p className="text-red-700 mt-5">{error && "Wrong password"}</p>
+      <p className="text-red-700 mt-5">{error && "Something went wrong!"}</p>
     </div>
   );
 }
