@@ -1,11 +1,15 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
-import { signInStart, signInSucess, signInfailure } from "../redux/user/userSlice";
+import {
+  signInStart,
+  signInSucess,
+  signInfailure,
+} from "../redux/user/userSlice";
 import { useDispatch, useSelector } from "react-redux";
 
 export default function SignIn() {
   const [formData, setFormData] = useState({});
-  const {loading, error} = useSelector((state) => state.user);
+  const { loading, error } = useSelector((state) => state.user);
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const handleChange = (e) => {
@@ -14,8 +18,8 @@ export default function SignIn() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    dispatch(signInStart()); // Start the sign-in process
     try {
-      dispatch(signInStart());
       const res = await fetch("/api/auth/signin", {
         method: "POST",
         headers: {
@@ -23,17 +27,17 @@ export default function SignIn() {
         },
         body: JSON.stringify(formData),
       });
+
       const data = await res.json();
-      if (data.success) {
-        dispatch(signInSuccess(data));
-        navigate("/");
-      } else {
-        dispatch(signInFailure());
-        setError(true);
+
+      if (data.success === false) {
+        dispatch(signInfailure(data.message)); // Pass error message from backend
+        return;
       }
+      dispatch(signInSucess(data)); // Pass user data from backend
+      navigate("/");
     } catch (error) {
-      dispatch(signInFailure());
-    
+      dispatch(signInfailure(error.toString())); // Pass error message from catch
     }
   };
 
@@ -42,7 +46,6 @@ export default function SignIn() {
       <h1 className="text-3xl text-center font-semibold my-7"> Sign In</h1>
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-        
         <input
           type="text"
           placeholder="Email"
@@ -72,7 +75,9 @@ export default function SignIn() {
           <span className="text-blue-500">Sign up</span>
         </Link>
       </div>
-      <p className="text-red-700 mt-5">{error && "Something went wrong!"}</p>
+      <p className='text-red-700 mt-5'>
+        {error ? error.message || 'Something went wrong!' : ''}
+      </p>
     </div>
   );
 }
